@@ -174,8 +174,9 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 
 		file_env 'MYSQL_DATABASE'
 		if [ "$MYSQL_DATABASE" ]; then
-			echo "CREATE DATABASE IF NOT EXISTS \`$MYSQL_DATABASE\` ;" | "${mysql[@]}"
-			mysql+=( "$MYSQL_DATABASE" )
+			for DATABASE in $MYSQL_DATABASE; do
+				echo "CREATE DATABASE IF NOT EXISTS $DATABASE ;" >> "$TEMP_FILE"
+			done
 		fi
 
 		file_env 'MYSQL_USER'
@@ -184,7 +185,9 @@ if [ "$1" = 'mysqld' -a -z "$wantHelp" ]; then
 			echo "CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD' ;" | "${mysql[@]}"
 
 			if [ "$MYSQL_DATABASE" ]; then
-				echo "GRANT ALL ON \`$MYSQL_DATABASE\`.* TO '$MYSQL_USER'@'%' ;" | "${mysql[@]}"
+				for DATABASE in $MYSQL_DATABASE; do
+					echo "GRANT ALL ON $DATABASE.* TO '$MYSQL_USER'@'%' ;" >> "$TEMP_FILE"
+				done
 			fi
 
 			echo 'FLUSH PRIVILEGES ;' | "${mysql[@]}"
